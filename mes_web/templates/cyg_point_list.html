@@ -1,0 +1,180 @@
+{% extends "cyg_base.html" %}
+
+{% block cyg_style %}
+    <style>
+        .layui-table thead {
+            background-color: #5b6973;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block cyg_content %}
+    <blockquote class="layui-elem-quote layui-text">
+        点位列表
+    </blockquote>
+    <div>
+        <button type="submit" class="layui-btn new_point" lay-submit lay-filter="new_point">新建点位</button>
+    </div>
+
+    <div>
+        <table class="layui-hide" id="point_list_table"></table>
+    </div>
+
+{% endblock %}
+
+{% block cyg_script %}
+    <script>
+        layui.use(['form', 'util', 'table'], async function () {
+            let form = layui.form;
+            let layer = layui.layer;
+            let table = layui.table;
+
+            const recipe_names = await get_recipe_names(); // 获取的数据
+            const recipeOptions = recipe_names.map(item => `<option value="${item}">${item}</option>`).join('');
+
+            const pointFormHtml = `
+                <div class="layui-card layui-panel">
+                    <div class="layui-card-header"></div>
+                    <div class="layui-card-body">
+                        <form class="layui-form new_point_form" action="" method="POST">
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Point Name</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="point_name" autocomplete="off" class="layui-input point_name" lay-verify="required">
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">扫码X坐标</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="x_point" autocomplete="off" class="layui-input x_point" min="0" step="0.01" lay-verify="required" value=0>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">扫码Y坐标</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="y_point" autocomplete="off" class="layui-input y_point" min="0" step="0.01" lay-verify="required" value=0>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">拍照X坐标</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="x_mark_point" autocomplete="off" class="layui-input x_mark_point" min="0" step="0.01" lay-verify="required" value=0>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">拍照Y坐标</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="y_mark_point" autocomplete="off" class="layui-input y_mark_point" min="0" step="0.01" lay-verify="required" value=0>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">选择配方</label>
+                                <div class="layui-input-block">
+                                    <label>
+                                        <select name="recipe_select" lay-filter="select_recipe" lay-verify="required"
+                                                class="recipe_select">
+                                            <option value="">Optional</option>
+                                                ${recipeOptions}
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="submit" class="layui-btn submit_new_point" lay-submit lay-filter="submit_new_point">提交</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            // 渲染
+            table.render({
+                elem: '#point_list_table',
+                url: '/get_points', // 请求数据的 URL
+                method: 'GET', // 请求方式
+                page: true,
+                limit: 20,
+                limits: [10, 20, 30, 50],
+                cols: [[
+                    {field: 'id', title: 'ID', type: 'numbers', width: 80, fixed: 'left', unresize: true, sort: true},
+                    {field: 'point_name', title: 'Point Name', width: 150},
+                    {field: 'recipe_name', title: 'Recipe Name', width: 150},
+                    {field: 'x_point', title: '扫码X坐标'},
+                    {field: 'x_point', title: '扫码Y坐标'},
+                    {field: 'x_mark_point', title: '拍照X坐标'},
+                    {field: 'y_mark_point', title: '拍照Y坐标'},
+                    {field: 'reserve_1', title: '预留1', width: 80},
+                    {field: 'reserve_2', title: '预留2', width: 80},
+                    {field: 'reserve_3', title: '预留3', width: 80},
+                    {field: 'reserve_4', title: '预留4', width: 80},
+                    {
+                        field: 'created_at', title: '创建时间',
+                            templet: function (d) {
+                                return formatDate(d.updated_at);
+                            }
+                    }
+                ]],
+                height: 'full-220',
+            });
+
+
+            // 点击新建点位按钮
+            form.on('submit(new_point)', function (data) {
+                layer.open({
+                    type: 1, // page 层类型
+                    area: ['70%', '70%'],
+                    title: '新建点位:',
+                    shade: 0.6, // 遮罩透明度
+                    shadeClose: true, // 点击遮罩区域，关闭弹层
+                    maxmin: true, // 允许全屏最小化
+                    anim: 0, // 0-6 的动画形式，-1 不开启
+                    content: pointFormHtml,
+                    success: function() {
+                        form.render(); // 重新渲染表单中所有组件
+                    }
+                });
+
+                // 监听新建点位页面提交按钮点击事件
+                form.on('submit(submit_new_point)', function (data) {
+                    let field = data.field; // 获取表单字段值
+
+                    fetch('/add_point', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            point_name: field.point_name,
+                            x_point: field.x_point, y_point: field.y_point,
+                            x_mark_point: field.x_mark_point, y_mark_point: field.y_mark_point,
+                            recipe_name: field.recipe_select
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(data => {
+                        const icon_code = 6
+                        const message = "Success"
+
+                        layer.alert(message, {
+                            icon: icon_code,
+                            title: '新建点位结果',
+                        }, function (){
+                            window.location.reload(); // 刷新当前页面
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+                    return false // 阻止表单提交
+                })
+            })
+        })
+
+    </script>
+{% endblock %}
+

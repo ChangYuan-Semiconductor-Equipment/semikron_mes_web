@@ -1,0 +1,203 @@
+{% extends "cyg_base.html" %}
+
+{% block cyg_style %}
+    <style>
+        .layui-table thead {
+            background-color: #5b6973;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block cyg_content %}
+    <blockquote class="layui-elem-quote layui-text">
+        工单列表
+    </blockquote>
+    <div>
+        <button type="submit" class="layui-btn" lay-submit lay-filter="new_lot">开工单</button>
+    </div>
+    <div>
+        <table class="layui-hide" id="lot_list_table"></table>
+    </div>
+
+{% endblock %}
+
+{% block cyg_script %}
+    <script src="../static/jquery/jquery-3.6.0.min.js"></script>
+
+    <script>
+
+        layui.use(['form', 'util', 'table', 'layer'], function () {
+            let form = layui.form;
+            let layer = layui.layer;
+            let table = layui.table;
+
+            // 渲染
+            table.render({
+                elem: '#lot_list_table',
+                url: '/get_lots', // 请求数据的 URL
+                method: 'GET', // 请求方式
+                page: true,
+                limit: 20,
+                limits: [10, 20, 30, 50],
+                cols: [[
+                    {field: 'id', title: 'ID', type: 'numbers', width: 80, fixed: 'left', unresize: true, sort: true},
+                    {field: 'lot_name', title: '工单号', width: 200},
+                    {field: 'lot_article_name', title: 'Article Name', width: 200},
+                    {field: 'lot_quality', title: '工单数量', width: 120},
+                    {
+                        field: 'lot_state', title: '工单状态', width: 120,
+                        templet: function (d) {
+                            return d.lot_state === 1 ? '运行中' : '已结束';
+                        }
+                    },
+                    {field: 'recipe_name', title: '配方名'},
+                    {field: 'point_name', title: '点位名'},
+                    {
+                        field: 'updated_at', title: '更新时间',
+                            templet: function (d) {
+                                return formatDate(d.updated_at);
+                            }
+                    },
+                    {
+                        field: 'created_at', title: '创建时间',
+                            templet: function (d) {
+                                return formatDate(d.updated_at);
+                            }
+                    }
+                ]],
+                height: 'full-220',
+            });
+
+            // 点击开工单按钮
+            form.on('submit(new_lot)', async function (data) {
+                const recipe_names = await get_recipe_names(); // 获取的数据
+                const point_names = await get_point_names(); // 获取的数据
+
+                // 更新 lotFormHtml 中的 select
+                const recipeOptions = recipe_names.map(item => `<option value="${item}">${item}</option>`).join('');
+                const pointOptions = point_names.map(item => `<option value="${item}">${item}</option>`).join('');
+
+                let lotFormHtml = `
+                    <div class="layui-card layui-panel">
+                        <div class="layui-card-header"></div>
+                        <div class="layui-card-body">
+                            <form class="layui-form new_lot_form" action="" method="POST">
+
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">工单号</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="new_lot_name" autocomplete="off" class="layui-input new_lot_name" lay-verify="required">
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">Article 号</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="new_lot_article_name" autocomplete="off" class="layui-input new_lot_article_name" lay-verify="required">
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">工单数量</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="new_lot_quality" autocomplete="off" class="layui-input new_lot_quality" lay-verify="required" value=10000>
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">关联点位</label>
+                                    <div class="layui-input-block">
+                                        <label>
+                                            <select name="point_select" lay-filter="select_recipe" lay-verify="required"
+                                                    class="point_select" disabled>
+                                                <option value="">Optional</option>
+                                                    ${pointOptions}
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item">
+                                    <div class="layui-input-block">
+                                        <button type="submit" class="layui-btn submit_new_lot" lay-submit lay-filter="submit_new_lot">提交</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                layer.open({
+                    type: 1, // page 层类型
+                    area: ['70%', '70%'],
+                    title: '开工单:',
+                    shade: 0.6, // 遮罩透明度
+                    shadeClose: true, // 点击遮罩区域，关闭弹层
+                    maxmin: true, // 允许全屏最小化
+                    anim: 0, // 0-6 的动画形式，-1 不开启
+                    content: lotFormHtml,
+                    success: function() {
+                        form.render('select'); // 渲染所有 select
+                        // 使用 jQuery 监听 new_lot_article_name 输入框的 input 事件
+                        $('.new_lot_article_name').on('input', function() {
+                            const articleName = $(this).val();
+                            const recipeSelect = $('.recipe_select');
+                            const pointSelect = $('.point_select');
+
+                            // 根据 articleName 选择对应的 recipe
+                            const selectedRecipe = recipe_names.find(recipe => articleName.includes(recipe));
+                            if (selectedRecipe) {
+                                recipeSelect.val(selectedRecipe); // 设置选择框的值
+                            } else {
+                                recipeSelect.val(''); // 如果没有匹配项，清空选择框
+                            };
+
+                            // 根据 articleName 选择对应的 point
+                            const selectedPoint = point_names.find(point => articleName.includes(point));
+                            if (selectedPoint) {
+                                pointSelect.val(selectedPoint); // 设置选择框的值
+                            } else {
+                                pointSelect.val(''); // 如果没有匹配项，清空选择框
+                            };
+                            form.render('select'); // 重新渲染选择框以更新UI
+                        });
+
+                    }
+                });
+
+                // 监听新建工单页面提交按钮点击事件
+                form.on('submit(submit_new_lot)', function (data) {
+                    let field = data.field; // 获取表单字段值
+
+                    fetch('/submit_new_lot', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            lot_name: field.new_lot_name,
+                            lot_article_name: field.new_lot_article_name,
+                            lot_quality: field.new_lot_quality,
+                            point_name: field.point_select
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(data => {
+                        const icon_code = data["icon_code"]
+                        const message = data["message"]
+
+                        layer.alert(message, {
+                            icon: icon_code,
+                            title: '新建工单结果',
+                        }, function () {
+                            window.location.reload(); // 刷新当前页面
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+                    return false // 阻止表单提交
+                })
+            })
+        })
+
+    </script>
+{% endblock %}
+

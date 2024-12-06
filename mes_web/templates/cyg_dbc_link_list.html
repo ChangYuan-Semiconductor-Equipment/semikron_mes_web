@@ -1,0 +1,67 @@
+{% extends "cyg_base.html" %}
+
+{% block cyg_style %}
+    <style>
+        .layui-table thead {
+            background-color: #5b6973;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block cyg_content %}
+
+    <blockquote class="layui-elem-quote layui-text">
+        dbc 绑定列表
+    </blockquote>
+
+    <div>
+        <table class="layui-hide" id="dbc_link_list_table"></table>
+    </div>
+
+{% endblock %}
+
+{% block cyg_script %}
+    <script>
+
+        layui.use(['form', 'util', 'table', 'layer'], function () {
+
+            let table = layui.table;
+
+            // 渲染
+            table.render({
+                elem: '#dbc_link_list_table',
+                url: '/get_dbc_links', // 请求数据的 URL
+                method: 'GET', // 请求方式
+                page: true,
+                limit: 20,
+                limits: [10, 20, 30, 50],
+                cols: [[
+                    {field: 'id', title: 'ID', type: 'numbers', width: 60, fixed: 'left', unresize: true, sort: true},
+                    {field: 'dbc_code', title: 'PH DMX', width: 200},
+                    {
+                        field: 'dbc_state', title: 'Result', width: 120,
+                        templet: function (d) {
+                            return d.dbc_state === 1 ? 'OK' : 'NG';
+                        }
+                    },
+                    {field: 'carrier_id', title: 'Carrier ID', width: 200},
+
+                    {field: 'tray_code', title: 'Blister ID', width: 200},
+                    {field: 'tray_index', title: 'Blister Index', width: 120},
+                    {field: 'lot_name', title: 'Order Number'},
+                    {field: 'lot_article_name', title: 'Article Number'},
+                    {
+                        field: 'created_at', title: 'Create Time',
+                            templet: function (d) {
+                                return formatDate(d.updated_at);
+                            }
+                    }
+                ]],
+                height: 'full-220',
+            });
+        })
+
+    </script>
+{% endblock %}
+

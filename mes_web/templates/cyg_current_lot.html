@@ -1,0 +1,138 @@
+{% extends "cyg_base.html" %}
+
+{% block cyg_style %}
+
+{% endblock %}
+
+{% block cyg_content %}
+    <blockquote class="layui-elem-quote layui-text">
+        当前工单
+    </blockquote>
+    <div class="layui-card layui-panel">
+        <div class="layui-card-header">
+        </div>
+        <div class="layui-card-body">
+            <form class="layui-form" action="" method="POST">
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">设备模式</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="equipment_state" autocomplete="off" class="layui-input equipment_state"
+                               value='{{ equipment_state }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">OrderState</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_lot_state" autocomplete="off"
+                               class="layui-input current_lot_state"
+                               value='{{ current_lot_state }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">OrderID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_lot_name" autocomplete="off" class="layui-input current_lot_name"
+                               value='{{ current_lot_name }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">ArticleID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_lot_article_name" autocomplete="off"
+                               class="layui-input current_lot_article_name"
+                               value='{{ current_lot_article_name }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">OrderQuality</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_lot_quality" autocomplete="off"
+                               value='{{ current_lot_quality }}' class="layui-input current_lot_quality" disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">配方</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_recipe_name" autocomplete="off"
+                               class="layui-input current_recipe_name"
+                               value='{{ current_recipe_name }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">点位</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="current_point_name" autocomplete="off"
+                               class="layui-input current_point_name"
+                               value='{{ current_point_name }}' disabled>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="end_lot">结工单</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block cyg_script %}
+    <script>
+        layui.use(['form', 'util'], function () {
+            let form = layui.form;
+            let layer = layui.layer;
+
+            // 结工单事件
+            form.on('submit(end_lot)', function (data) {
+                let field = data.field; // 获取表单字段值
+
+                layer.confirm('确认结束该工单吗？', {
+                    title: '确认',
+                    btn: ['确认', '取消'] // 按钮
+                }, function () {
+                    // 用户点击“确认”后执行的逻辑
+                    fetch('/submit_end_lot', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({lot_name: field.current_lot_name}) // 假设 current_lot 是表单中的一个字段
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+                        const icon_code = data["icon_code"];
+                        const message = data["message"];
+                        const equipment_state = data["equipment_state"];
+                        const current_lot_state = data["current_lot_state"];
+
+                        layer.alert(message, {
+                            icon: icon_code,
+                            title: '结束工单结果',
+                            success: function () {
+                                let equipment_state_input = document.querySelector('.equipment_state');
+                                equipment_state_input.value = equipment_state;
+
+                                let current_lot_state_input = document.querySelector('.current_lot_state');
+                                current_lot_state_input.value = current_lot_state;
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+                }, function () {
+                    // 用户点击“取消”后的逻辑（可以留空）
+                });
+
+                return false; // 阻止表单提交
+            });
+        })
+    </script>
+{% endblock %}
+
