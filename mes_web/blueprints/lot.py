@@ -44,6 +44,5 @@ def submit_end_lot():
 
 @blue_print.route("/submit_clear_signal", methods=["POST"])
 def submit_clear_signal():
-    print(11111111111111)
     client_send(json.dumps({"clear_signal": ""}))
     return jsonify({})
