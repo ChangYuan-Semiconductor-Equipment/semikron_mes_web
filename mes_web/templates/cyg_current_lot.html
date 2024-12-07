@@ -77,6 +77,8 @@
                 <div class="layui-form-item">
                     <div class="layui-input-block">
                         <button type="submit" class="layui-btn" lay-submit lay-filter="end_lot">结工单</button>
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="clear_signal">清信号</button>
+
                     </div>
                 </div>
             </form>
@@ -123,6 +125,34 @@
                                 let current_lot_state_input = document.querySelector('.current_lot_state');
                                 current_lot_state_input.value = current_lot_state;
                             }
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+                }, function () {
+                    // 用户点击“取消”后的逻辑（可以留空）
+                });
+                return false; // 阻止表单提交
+            });
+
+            // 清除信号
+            form.on('submit(clear_signal)', function (data) {
+                layer.confirm('确认清除信号吗？', {
+                    title: '确认',
+                    btn: ['确认', '取消'] // 按钮
+                }, function () {
+                    // 用户点击“确认”后执行的逻辑
+                    fetch('/submit_clear_signal', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+
+                        layer.alert("清除成功, 按复位启动继续生产", {
+                            icon: 6,
+                            title: '清除信号结果'
                         });
                     })
                     .catch(error => console.error('Error:', error));
