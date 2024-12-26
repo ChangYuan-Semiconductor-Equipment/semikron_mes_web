@@ -72,6 +72,36 @@
                             </div>
 
                             <div class="layui-form-item">
+                                <label class="layui-form-label">机械手程序ID</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="robot_id" autocomplete="off" class="layui-input robot_id" min="0" step="1" lay-verify="required" value=0>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">相机程序ID</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="camera_id" autocomplete="off" class="layui-input camera_id" min="0" step="1" lay-verify="required" value=0>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">来料是否旋转</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="in_rotation" value=1 title="Yes">
+                                    <input type="radio" name="in_rotation" value=0 title="No" checked>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">出料是否旋转</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="out_rotation" value=1 title="Yes">
+                                    <input type="radio" name="out_rotation" value=0 title="No" checked>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
                                 <label class="layui-form-label">选择配方</label>
                                 <div class="layui-input-block">
                                     <label>
@@ -110,15 +140,26 @@
                     {field: 'x_point', title: '扫码Y坐标'},
                     {field: 'x_mark_point', title: '拍照X坐标'},
                     {field: 'y_mark_point', title: '拍照Y坐标'},
-                    {field: 'reserve_1', title: '预留1', width: 80},
-                    {field: 'reserve_2', title: '预留2', width: 80},
-                    {field: 'reserve_3', title: '预留3', width: 80},
-                    {field: 'reserve_4', title: '预留4', width: 80},
+                    {field: 'robot_id', title: '机械手程序ID'},
+                    {field: 'camera_id', title: '相机程序ID'},
+                    {
+                        field: 'in_rotation', title: '来料是否旋转',
+                        templet: function (d) {
+                            return d.in_rotation === 1 ? '是' : '否';
+                        }
+                    },
+                    {
+                        field: 'out_rotation', title: '出料是否旋转',
+
+                        templet: function (d) {
+                            return d.out_rotation === 1 ? '是' : '否';
+                        }
+                    },
                     {
                         field: 'created_at', title: '创建时间',
                             templet: function (d) {
                                 return formatDate(d.updated_at);
-                            }
+                            }, width: 200
                     }
                 ]],
                 height: 'full-220',
@@ -134,7 +175,7 @@
                     shade: 0.6, // 遮罩透明度
                     shadeClose: true, // 点击遮罩区域，关闭弹层
                     maxmin: true, // 允许全屏最小化
-                    anim: 0, // 0-6 的动画形式，-1 不开启
+                    anim: 0, // 0-6 的动画形式, -1 不开启
                     content: pointFormHtml,
                     success: function() {
                         form.render(); // 重新渲染表单中所有组件
@@ -152,6 +193,8 @@
                             point_name: field.point_name,
                             x_point: field.x_point, y_point: field.y_point,
                             x_mark_point: field.x_mark_point, y_mark_point: field.y_mark_point,
+                            robot_id: field.robot_id, camera_id: field.camera_id,
+                            in_rotation: field.in_rotation, out_rotation: field.out_rotation,
                             recipe_name: field.recipe_select
                         })
                     })
