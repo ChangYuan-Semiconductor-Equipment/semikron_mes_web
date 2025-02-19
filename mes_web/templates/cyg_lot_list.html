@@ -100,7 +100,7 @@
                                 <div class="layui-form-item">
                                     <label class="layui-form-label">工单数量</label>
                                     <div class="layui-input-block">
-                                        <input type="text" name="new_lot_quality" autocomplete="off" class="layui-input new_lot_quality" lay-verify="required" value=10000>
+                                        <input type="text" name="new_lot_quality" autocomplete="off" class="layui-input new_lot_quality" lay-verify="required" value="">
                                     </div>
                                 </div>
 
@@ -108,7 +108,7 @@
                                     <label class="layui-form-label">关联点位</label>
                                     <div class="layui-input-block">
                                         <label>
-                                            <select name="point_select" lay-filter="select_recipe" lay-verify="required"
+                                            <select name="point_select" lay-filter="point_select" lay-verify="required"
                                                     class="point_select" disabled>
                                                 <option value="">Optional</option>
                                                     ${pointOptions}

@@ -86,20 +86,31 @@
                             </div>
 
                             <div class="layui-form-item">
-                                <label class="layui-form-label">来料是否旋转</label>
+                                <label class="layui-form-label">取料旋转</label>
                                 <div class="layui-input-block">
-                                    <input type="radio" name="in_rotation" value=1 title="Yes">
-                                    <input type="radio" name="in_rotation" value=0 title="No" checked>
+                                    <input type="radio" name="pick_rotation" value=1 title="正转">
+                                    <input type="radio" name="pick_rotation" value=0 title="不旋转" checked>
+                                    <input type="radio" name="pick_rotation" value=-1 title="反转">
                                 </div>
                             </div>
 
                             <div class="layui-form-item">
-                                <label class="layui-form-label">出料是否旋转</label>
+                                <label class="layui-form-label">放料旋转</label>
                                 <div class="layui-input-block">
-                                    <input type="radio" name="out_rotation" value=1 title="Yes">
-                                    <input type="radio" name="out_rotation" value=0 title="No" checked>
+                                    <input type="radio" name="put_rotation" value=1 title="正转">
+                                    <input type="radio" name="put_rotation" value=0 title="不旋转" checked>
+                                    <input type="radio" name="put_rotation" value=-1 title="反转" >
                                 </div>
                             </div>
+
+<!--                            <div class="layui-form-item">-->
+<!--                                <label class="layui-form-label">出料旋转</label>-->
+<!--                                <div class="layui-input-block">-->
+<!--                                    <input type="radio" name="out_rotation" value=1 title="正转">-->
+<!--                                    <input type="radio" name="out_rotation" value=0 title="不旋转" checked>-->
+<!--                                    <input type="radio" name="out_rotation" value=-1 title="反转">-->
+<!--                                </div>-->
+<!--                            </div>-->
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label">选择配方</label>
@@ -137,24 +148,53 @@
                     {field: 'point_name', title: 'Point Name', width: 150},
                     {field: 'recipe_name', title: 'Recipe Name', width: 150},
                     {field: 'x_point', title: '扫码X坐标'},
-                    {field: 'x_point', title: '扫码Y坐标'},
+                    {field: 'y_point', title: '扫码Y坐标'},
                     {field: 'x_mark_point', title: '拍照X坐标'},
                     {field: 'y_mark_point', title: '拍照Y坐标'},
                     {field: 'robot_id', title: '机械手程序ID'},
                     {field: 'camera_id', title: '相机程序ID'},
                     {
-                        field: 'in_rotation', title: '来料是否旋转',
+                        field: 'pick_rotation', title: '取料旋转',
                         templet: function (d) {
-                            return d.in_rotation === 1 ? '是' : '否';
+                            if (d.pick_rotation === 1) {
+                                return '正转';
+                            } else if (d.pick_rotation === -1) {
+                                return '反转';
+                            } else if (d.pick_rotation === 0) {
+                                return '不旋转';
+                            } else {
+                                return '未知状态'; // 处理其他可能的值
+                            }
                         }
                     },
                     {
-                        field: 'out_rotation', title: '出料是否旋转',
-
+                        field: 'put_rotation', title: '放料旋转',
                         templet: function (d) {
-                            return d.out_rotation === 1 ? '是' : '否';
+                            if (d.put_rotation === 1) {
+                                return '正转';
+                            } else if (d.put_rotation === -1) {
+                                return '反转';
+                            } else if (d.put_rotation === 0) {
+                                return '不旋转';
+                            } else {
+                                return '未知状态'; // 处理其他可能的值
+                            }
                         }
                     },
+<!--                    {-->
+<!--                        field: 'out_rotation', title: '出料旋转',-->
+<!--                        templet: function (d) {-->
+<!--                            if (d.out_rotation === 1) {-->
+<!--                                return '正转';-->
+<!--                            } else if (d.out_rotation === -1) {-->
+<!--                                return '反转';-->
+<!--                            } else if (d.out_rotation === 0) {-->
+<!--                                return '不旋转';-->
+<!--                            } else {-->
+<!--                                return '未知状态'; // 处理其他可能的值-->
+<!--                            }-->
+<!--                        }-->
+<!--                    },-->
                     {
                         field: 'created_at', title: '创建时间',
                             templet: function (d) {
@@ -194,7 +234,7 @@
                             x_point: field.x_point, y_point: field.y_point,
                             x_mark_point: field.x_mark_point, y_mark_point: field.y_mark_point,
                             robot_id: field.robot_id, camera_id: field.camera_id,
-                            in_rotation: field.in_rotation, out_rotation: field.out_rotation,
+                            pick_rotation: field.pick_rotation, put_rotation: field.put_rotation, out_rotation: field.out_rotation,
                             recipe_name: field.recipe_select
                         })
                     })

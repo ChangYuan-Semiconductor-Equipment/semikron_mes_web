@@ -16,6 +16,31 @@
     </blockquote>
 
     <div>
+        <form class="layui-form layui-row layui-col-space16">
+            <div class="layui-col-md4">
+                <div class="layui-input-wrap">
+                  <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                  </div>
+                  <input type="text" name="dbc_code" value="" placeholder="PH DMX" class="layui-input" lay-affix="clear">
+                </div>
+            </div>
+
+            <div class="layui-col-md4">
+                <div class="layui-input-wrap">
+                  <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                  </div>
+                  <input type="text" name="lot_name" value="" placeholder="Order Number" class="layui-input" lay-affix="clear">
+                </div>
+            </div>
+
+            <div class="layui-col-md4">
+                <button class="layui-btn" lay-submit lay-filter="table_search">搜索</button>
+                <button class="layui-btn layui-btn-primary" lay-submit lay-filter="table_clear">重置</button>
+            </div>
+
+        </form>
         <table class="layui-hide" id="dbc_link_list_table"></table>
     </div>
 
@@ -27,6 +52,7 @@
         layui.use(['form', 'util', 'table', 'layer'], function () {
 
             let table = layui.table;
+            let form = layui.form;
 
             // 渲染
             table.render({
@@ -60,8 +86,37 @@
                 ]],
                 height: 'full-220',
             });
-        })
+            
+            // 搜索提交
+            form.on('submit(table_search)', function(data){
+                const field = data.field; // 获得表单字段
 
+                table.reload('dbc_link_list_table', {
+                    url: '/get_dbc_links_with_condition', // 新的数据接口
+                    where: field, // 请求参数
+                    page: { curr: 1 } // 重新从第 1 页开始
+                });
+                return false;
+            });
+
+            // clear提交
+            form.on('submit(table_clear)', function(data){
+                let dbc_code_input = document.querySelector('.dbc_code');
+                dbc_code_input.value = "";
+
+                let lot_name_input = document.querySelector('.lot_name');
+                lot_name_input.value = "";
+
+                const field = data.field; // 获得表单字段
+
+                table.reload('dbc_link_list_table', {
+                    url: '/get_dbc_links', // 新的数据接口
+                    where: field, // 请求参数
+                    page: { curr: 1 } // 重新从第 1 页开始
+                });
+                return false;
+            });
+        })
     </script>
 {% endblock %}
 

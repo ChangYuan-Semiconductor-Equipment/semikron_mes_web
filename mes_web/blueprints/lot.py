@@ -27,6 +27,7 @@ def lot_list():
 @blue_print.route("/submit_new_lot", methods=["POST"])
 def submit_new_lot():
     form_data_dict = request.get_json()
+    form_data_dict["lot_quality"] = 10000
     response = client_send(json.dumps({"new_lot": form_data_dict}))
     if response.get("code") == 200:
         form_data_dict.update({"recipe_name": response.get("current_recipe_name", "")})

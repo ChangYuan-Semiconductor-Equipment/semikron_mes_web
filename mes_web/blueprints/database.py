@@ -1,3 +1,4 @@
+import copy
 
 from flask import Blueprint, request, jsonify
 from mysql_api.mysql_database import MySQLDatabase
@@ -91,6 +92,28 @@ def get_dbc_links():
     page = int(request.args.get("page"))  # 获取 page 参数
     limit = int(request.args.get("limit"))  # 获取 limit 参数
     instances = mysql_api.query_data_all(DbcLinkTray)
+    dbc_link_list = [instance.as_dict() for instance in instances]
+    response_info = {
+        "code": 0,
+        "count": len(dbc_link_list),
+        "data": dbc_link_list[(page - 1) * limit:page * limit]
+    }
+    return response_info
+
+
+@blue_print.route("/get_dbc_links_with_condition", methods=["GET", "POST"])
+def get_dbc_links_with_condition():
+
+    filters = dict(request.args)
+
+    page = int(filters.pop("page"))  # 获取 page 参数
+    limit = int(filters.pop("limit"))  # 获取 limit 参数
+    filters_copy = copy.deepcopy(filters)
+    for filter_name, value in filters.items():
+        if not value:
+            filters_copy.pop(filter_name)
+
+    instances = mysql_api.query_data_all(DbcLinkTray, **filters_copy)
     dbc_link_list = [instance.as_dict() for instance in instances]
     response_info = {
         "code": 0,
